@@ -7,10 +7,10 @@ mkdir -p service
 
 for file in idl/*.thrift; do
     filename=$(basename "$file" .thrift)
-    kitex -module "tiktok" "tiktok/"$file"
-    mkdir -p service/"$filename"
-    cd service/"$filename"
-    kitex -module "tiktok" -service "$filename" -use tiktok/kitex_gen/ tiktok/"$file"
+    kitex -module "tiktok" "$file"
+    mkdir -p "service/$filename"
+    cd "service/$filename"
+    kitex -module "tiktok" -service "$filename" -use "tiktok/kitex_gen" "../../$file"
     cd "$start_dir"
 done
 
