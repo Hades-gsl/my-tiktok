@@ -5,3 +5,7 @@ type UserToken struct {
 	Username string `gorm:"not null;unique;size: 32"`
 	UserID   uint32 `gorm:"not null;index"`
 }
+
+func (u *UserToken) TableName() string {
+	return "user_tokens"
+}
