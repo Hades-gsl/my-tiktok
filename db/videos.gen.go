@@ -31,7 +31,7 @@ func newVideo(db *gorm.DB, opts ...gen.DOOption) video {
 	_video.CreatedAt = field.NewTime(tableName, "created_at")
 	_video.UpdatedAt = field.NewTime(tableName, "updated_at")
 	_video.DeletedAt = field.NewField(tableName, "deleted_at")
-	_video.UserID = field.NewUint(tableName, "user_id")
+	_video.UserID = field.NewUint32(tableName, "user_id")
 	_video.Title = field.NewString(tableName, "title")
 	_video.FileAddr = field.NewString(tableName, "file_addr")
 	_video.CoverAddr = field.NewString(tableName, "cover_addr")
@@ -49,7 +49,7 @@ type video struct {
 	CreatedAt field.Time
 	UpdatedAt field.Time
 	DeletedAt field.Field
-	UserID    field.Uint
+	UserID    field.Uint32
 	Title     field.String
 	FileAddr  field.String
 	CoverAddr field.String
@@ -73,7 +73,7 @@ func (v *video) updateTableName(table string) *video {
 	v.CreatedAt = field.NewTime(table, "created_at")
 	v.UpdatedAt = field.NewTime(table, "updated_at")
 	v.DeletedAt = field.NewField(table, "deleted_at")
-	v.UserID = field.NewUint(table, "user_id")
+	v.UserID = field.NewUint32(table, "user_id")
 	v.Title = field.NewString(table, "title")
 	v.FileAddr = field.NewString(table, "file_addr")
 	v.CoverAddr = field.NewString(table, "cover_addr")

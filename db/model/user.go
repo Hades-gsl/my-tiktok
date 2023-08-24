@@ -5,7 +5,7 @@ import "gorm.io/gorm"
 type User struct {
 	gorm.Model
 	UserName        string `json:"name" gorm:"size:32"`
-	PassWord        string `gorm:"size:32"`
+	PassWord        string `gorm:"size:64"`
 	Avatar          string `json:"avatar"`
 	BackgroundImage string `json:"background_image"`
 	Signature       string `json:"signature"`

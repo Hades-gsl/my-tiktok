@@ -1,5 +1,7 @@
-CREATE TABLE IF NOT EXISTS user_tokens (
-token varchar(255) NOT NULL PRIMARY KEY,
-username varchar(32) NOT NULL UNIQUE,
-user_id int(32) NOT NULL INDEX
+CREATE TABLE IF NOT EXISTS `user_tokens` (
+    `token` VARCHAR(255) NOT NULL,
+    `username` VARCHAR(32) NOT NULL UNIQUE,
+    `user_id` INT NOT NULL,
+    PRIMARY KEY ( `token` ),
+    INDEX `user_id_index` ( `user_id` )
 );

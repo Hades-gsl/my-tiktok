@@ -6,7 +6,7 @@ import (
 
 type Video struct {
 	gorm.Model
-	UserID    uint
+	UserID    uint32
 	Title     string `json:"title" gorm:"size:32"`
 	FileAddr  string `json:"play_url"`
 	CoverAddr string `json:"cover_url"`

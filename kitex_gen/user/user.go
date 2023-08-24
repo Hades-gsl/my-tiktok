@@ -2060,8 +2060,8 @@ func (p *LoginResponse) Field4DeepEqual(src string) bool {
 }
 
 type InfoRequest struct {
-	UserId int64  `thrift:"user_id,1" frugal:"1,default,i64" json:"user_id"`
-	Token  string `thrift:"token,2" frugal:"2,default,string" json:"token"`
+	UserId  int64 `thrift:"user_id,1" frugal:"1,default,i64" json:"user_id"`
+	ActorId int64 `thrift:"actor_id,2" frugal:"2,default,i64" json:"actor_id"`
 }
 
 func NewInfoRequest() *InfoRequest {
@@ -2076,19 +2076,19 @@ func (p *InfoRequest) GetUserId() (v int64) {
 	return p.UserId
 }
 
-func (p *InfoRequest) GetToken() (v string) {
-	return p.Token
+func (p *InfoRequest) GetActorId() (v int64) {
+	return p.ActorId
 }
 func (p *InfoRequest) SetUserId(val int64) {
 	p.UserId = val
 }
-func (p *InfoRequest) SetToken(val string) {
-	p.Token = val
+func (p *InfoRequest) SetActorId(val int64) {
+	p.ActorId = val
 }
 
 var fieldIDToName_InfoRequest = map[int16]string{
 	1: "user_id",
-	2: "token",
+	2: "actor_id",
 }
 
 func (p *InfoRequest) Read(iprot thrift.TProtocol) (err error) {
@@ -2121,7 +2121,7 @@ func (p *InfoRequest) Read(iprot thrift.TProtocol) (err error) {
 				}
 			}
 		case 2:
-			if fieldTypeId == thrift.STRING {
+			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField2(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -2170,10 +2170,10 @@ func (p *InfoRequest) ReadField1(iprot thrift.TProtocol) error {
 }
 
 func (p *InfoRequest) ReadField2(iprot thrift.TProtocol) error {
-	if v, err := iprot.ReadString(); err != nil {
+	if v, err := iprot.ReadI64(); err != nil {
 		return err
 	} else {
-		p.Token = v
+		p.ActorId = v
 	}
 	return nil
 }
@@ -2229,10 +2229,10 @@ WriteFieldEndError:
 }
 
 func (p *InfoRequest) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("token", thrift.STRING, 2); err != nil {
+	if err = oprot.WriteFieldBegin("actor_id", thrift.I64, 2); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.Token); err != nil {
+	if err := oprot.WriteI64(p.ActorId); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -2261,7 +2261,7 @@ func (p *InfoRequest) DeepEqual(ano *InfoRequest) bool {
 	if !p.Field1DeepEqual(ano.UserId) {
 		return false
 	}
-	if !p.Field2DeepEqual(ano.Token) {
+	if !p.Field2DeepEqual(ano.ActorId) {
 		return false
 	}
 	return true
@@ -2274,9 +2274,9 @@ func (p *InfoRequest) Field1DeepEqual(src int64) bool {
 	}
 	return true
 }
-func (p *InfoRequest) Field2DeepEqual(src string) bool {
+func (p *InfoRequest) Field2DeepEqual(src int64) bool {
 
-	if strings.Compare(p.Token, src) != 0 {
+	if p.ActorId != src {
 		return false
 	}
 	return true

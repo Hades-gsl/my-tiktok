@@ -40,7 +40,7 @@ struct LoginResponse {
 
 struct InfoRequest {
     1: i64 user_id, // 用户id
-    2: string token // 用户鉴权token
+    2: i64 actor_id //观看者id
 }
 
 struct InforResponse {

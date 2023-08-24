@@ -653,8 +653,8 @@ func (p *Video) Field8DeepEqual(src string) bool {
 }
 
 type ListRequest struct {
-	LatestTime *int64  `thrift:"latest_time,1,optional" frugal:"1,optional,i64" json:"latest_time,omitempty"`
-	Token      *string `thrift:"token,2,optional" frugal:"2,optional,string" json:"token,omitempty"`
+	LatestTime *int64 `thrift:"latest_time,1,optional" frugal:"1,optional,i64" json:"latest_time,omitempty"`
+	UserId     *int64 `thrift:"user_id,2,optional" frugal:"2,optional,i64" json:"user_id,omitempty"`
 }
 
 func NewListRequest() *ListRequest {
@@ -674,32 +674,32 @@ func (p *ListRequest) GetLatestTime() (v int64) {
 	return *p.LatestTime
 }
 
-var ListRequest_Token_DEFAULT string
+var ListRequest_UserId_DEFAULT int64
 
-func (p *ListRequest) GetToken() (v string) {
-	if !p.IsSetToken() {
-		return ListRequest_Token_DEFAULT
+func (p *ListRequest) GetUserId() (v int64) {
+	if !p.IsSetUserId() {
+		return ListRequest_UserId_DEFAULT
 	}
-	return *p.Token
+	return *p.UserId
 }
 func (p *ListRequest) SetLatestTime(val *int64) {
 	p.LatestTime = val
 }
-func (p *ListRequest) SetToken(val *string) {
-	p.Token = val
+func (p *ListRequest) SetUserId(val *int64) {
+	p.UserId = val
 }
 
 var fieldIDToName_ListRequest = map[int16]string{
 	1: "latest_time",
-	2: "token",
+	2: "user_id",
 }
 
 func (p *ListRequest) IsSetLatestTime() bool {
 	return p.LatestTime != nil
 }
 
-func (p *ListRequest) IsSetToken() bool {
-	return p.Token != nil
+func (p *ListRequest) IsSetUserId() bool {
+	return p.UserId != nil
 }
 
 func (p *ListRequest) Read(iprot thrift.TProtocol) (err error) {
@@ -732,7 +732,7 @@ func (p *ListRequest) Read(iprot thrift.TProtocol) (err error) {
 				}
 			}
 		case 2:
-			if fieldTypeId == thrift.STRING {
+			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField2(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -781,10 +781,10 @@ func (p *ListRequest) ReadField1(iprot thrift.TProtocol) error {
 }
 
 func (p *ListRequest) ReadField2(iprot thrift.TProtocol) error {
-	if v, err := iprot.ReadString(); err != nil {
+	if v, err := iprot.ReadI64(); err != nil {
 		return err
 	} else {
-		p.Token = &v
+		p.UserId = &v
 	}
 	return nil
 }
@@ -842,11 +842,11 @@ WriteFieldEndError:
 }
 
 func (p *ListRequest) writeField2(oprot thrift.TProtocol) (err error) {
-	if p.IsSetToken() {
-		if err = oprot.WriteFieldBegin("token", thrift.STRING, 2); err != nil {
+	if p.IsSetUserId() {
+		if err = oprot.WriteFieldBegin("user_id", thrift.I64, 2); err != nil {
 			goto WriteFieldBeginError
 		}
-		if err := oprot.WriteString(*p.Token); err != nil {
+		if err := oprot.WriteI64(*p.UserId); err != nil {
 			return err
 		}
 		if err = oprot.WriteFieldEnd(); err != nil {
@@ -876,7 +876,7 @@ func (p *ListRequest) DeepEqual(ano *ListRequest) bool {
 	if !p.Field1DeepEqual(ano.LatestTime) {
 		return false
 	}
-	if !p.Field2DeepEqual(ano.Token) {
+	if !p.Field2DeepEqual(ano.UserId) {
 		return false
 	}
 	return true
@@ -894,14 +894,14 @@ func (p *ListRequest) Field1DeepEqual(src *int64) bool {
 	}
 	return true
 }
-func (p *ListRequest) Field2DeepEqual(src *string) bool {
+func (p *ListRequest) Field2DeepEqual(src *int64) bool {
 
-	if p.Token == src {
+	if p.UserId == src {
 		return true
-	} else if p.Token == nil || src == nil {
+	} else if p.UserId == nil || src == nil {
 		return false
 	}
-	if strings.Compare(*p.Token, *src) != 0 {
+	if *p.UserId != *src {
 		return false
 	}
 	return true
