@@ -23,8 +23,6 @@ func (s *FeedServiceImpl) List(ctx context.Context, req *feed.ListRequest) (resp
 		resp = &feed.ListResponse{
 			StatusCode: config.SQLQueryErrorStatusCode,
 			StatusMsg:  &config.SQLQueryErrorStatusMsg,
-			VideoList:  nil,
-			NextTime:   nil,
 		}
 		return
 	}
@@ -33,8 +31,6 @@ func (s *FeedServiceImpl) List(ctx context.Context, req *feed.ListRequest) (resp
 		resp = &feed.ListResponse{
 			StatusCode: config.NoVideoStatusCode,
 			StatusMsg:  &config.NoVideoStatusMsg,
-			VideoList:  nil,
-			NextTime:   nil,
 		}
 		return
 	}

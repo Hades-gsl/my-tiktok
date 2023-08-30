@@ -2,6 +2,7 @@ package main
 
 import (
 	"tiktok/kitex_gen/feed/feedservice"
+	"tiktok/kitex_gen/publish/publishservice"
 	"tiktok/kitex_gen/user/userservice"
 	"tiktok/service/control/mw"
 
@@ -12,8 +13,9 @@ import (
 )
 
 var (
-	feedClient feedservice.Client
-	userClient userservice.Client
+	feedClient    feedservice.Client
+	userClient    userservice.Client
+	publishClinet publishservice.Client
 )
 
 func init() {
@@ -27,6 +29,11 @@ func init() {
 	}
 
 	userClient, err = userservice.NewClient("user", client.WithResolver(r))
+	if err != nil {
+		hlog.Fatal(err)
+	}
+
+	publishClinet, err = publishservice.NewClient("publish", client.WithResolver(r))
 	if err != nil {
 		hlog.Fatal(err)
 	}
@@ -45,6 +52,10 @@ func main() {
 	user.POST("/register", register)
 	user.POST("/login", login)
 	user.GET("/", info)
+
+	publish := douyin.Group("/publish")
+	publish.POST("/action", publishAction)
+	publish.GET("/list", publishList)
 
 	h.Spin()
 }

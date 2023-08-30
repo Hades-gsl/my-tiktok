@@ -15,6 +15,13 @@ const (
 	PasswordWrongStatusCode
 	NotLogInStatusCode
 	IdInvalidStatusCode
+	TokenInvalidStatusCode
+	GetFileErrorStatusCode
+	FileOpenErrorStatusCode
+	FileReadErrorStatusCode
+	FileTypeErrorStatusCode
+	FileSaveErrorStatusCode
+	TitleEmptyStatusCode
 )
 
 var (
@@ -30,4 +37,11 @@ var (
 	PasswordWrongStatusMsg       = "Password wrong"
 	NotLogInStatusMsg            = "Not log in"
 	IdInvalidStatusMsg           = "Id invalid status"
+	TokenInvalidStatusMsg        = "Token invalid"
+	GetFileErrorStatusMsg        = "Get file error"
+	FileOpenErrorStatusMsg       = "File open error"
+	FileReadErrorStatusMsg       = "File read error"
+	FileTypeErrorStatusMsg       = "File type error"
+	FileSaveErrorStatusMsg       = "File save error"
+	TitleEmptyStatusMsg          = "Title empty"
 )

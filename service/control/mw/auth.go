@@ -22,6 +22,9 @@ const (
 func AuthMiddleware() app.HandlerFunc {
 	return func(ctx context.Context, c *app.RequestContext) {
 		token := c.Query("token")
+		if token == "" {
+			token = string(c.FormValue("token"))
+		}
 
 		if token == "" {
 			hlog.Info("No token")
