@@ -1,16 +1,27 @@
 #!/bin/bash
 
-# for dir in service/*; do
-#     sh $dir/build.sh
-#     svr=$(basename $dir)
-#     dir/output/bin/svr
-# done
-
 dir=$(pwd)
+svrs=("service/feed" "service/user" "service/publish" "service/control")
 
-cd $dir/service/user && sh build.sh
-cd $dir/service/control && sh build.sh
+if [[ "$1" == "build" ]]; then
+    for svr in "${svrs[@]}"; do
+        cd "$dir/$svr" && sh build.sh
+        echo build $(basename "$svr") success
+    done
+elif [[ "$1" == "run" ]]; then
+    for svr in "${svrs[@]}"; do
+        cd "$dir/$svr" && sh build.sh
+        echo build $(basename "$svr") success
+    done
+    for svr in "${svrs[@]}"; do
+        cd "$dir/$svr" && output/bin/$(basename "$svr")&
+        echo run $(basename "$svr") success
+    done
+elif [[ "$1" == "end" ]]; then
+    for svr in "${svrs[@]}"; do
+        pid=$(ps aux | grep output/bin/$(basename "$svr") | grep -v grep | awk '{print $2}')
+        kill $pid
+        echo kill $(basename "$svr") success
+    done
+fi
 
-cd $dir
-service/user/output/bin/user&
-service/control/output/bin/control&
