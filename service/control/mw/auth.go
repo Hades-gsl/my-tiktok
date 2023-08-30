@@ -44,7 +44,7 @@ func AuthMiddleware() app.HandlerFunc {
 		}
 
 		c.Set(authResultKey, authResultSuccess)
-		c.Set(userIdKey, user.UserID)
+		c.Set(userIdKey, int64(user.UserID))
 	}
 }
 

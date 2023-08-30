@@ -13,9 +13,11 @@ import (
 )
 
 func register(ctx context.Context, c *app.RequestContext) {
-	hlog.Info("register")
 	name := c.Query("username")
 	password := c.Query("password")
+
+	hlog.Infof("register: name: %v", name)
+
 	resp, err := userClient.Register(ctx, &user.RegisterRequest{
 		Username: name,
 		Password: password,
@@ -31,9 +33,11 @@ func register(ctx context.Context, c *app.RequestContext) {
 }
 
 func login(ctx context.Context, c *app.RequestContext) {
-	hlog.Info("login")
 	name := c.Query("username")
 	password := c.Query("password")
+
+	hlog.Infof("login: name: %v", name)
+
 	resp, err := userClient.Login(ctx, &user.LoginRequest{
 		Username: name,
 		Password: password,
@@ -49,9 +53,14 @@ func login(ctx context.Context, c *app.RequestContext) {
 }
 
 func info(ctx context.Context, c *app.RequestContext) {
-	hlog.Info("info")
-	actor_id, _ := mw.Auth(c)
+	actor_id, ok := mw.Auth(c)
+	if !ok {
+		hlog.Error("no token or token invalid")
+	}
 	id, err := strconv.ParseInt(c.Query("user_id"), 10, 64)
+
+	hlog.Infof("info: user_id: %v, actor_id: %v", id, actor_id)
+
 	if err != nil {
 		c.JSON(http.StatusForbidden, &user.InforResponse{
 			StatusCode: config.IdInvalidStatusCode,

@@ -64,6 +64,8 @@ func publishAction(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
+	hlog.Infof("publishAction: user_id: %v, title: %v", id, string(title))
+
 	resp, err := publishClinet.Action(ctx, &publish.ActionRequest{
 		UserId: id,
 		Data:   data,
@@ -99,6 +101,8 @@ func publishList(ctx context.Context, c *app.RequestContext) {
 		})
 		return
 	}
+
+	hlog.Infof("publishList: user_id: %v, actor_id: %v", user_id, actor_id)
 
 	resp, err := publishClinet.List(ctx, &publish.ListRequest{
 		UserId:  user_id,

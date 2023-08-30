@@ -5,6 +5,6 @@ const (
 	UserServiceAddr    = "127.0.0.1:35456"
 	PublishServiceAddr = "127.0.0.1:35457"
 
-	VideoPath = "/home/hades/store/videos"
-	CoverPath = "/home/hades/store/covers"
+	VideoPath = "/home/hades/store/videos/"
+	CoverPath = "/home/hades/store/covers/"
 )
