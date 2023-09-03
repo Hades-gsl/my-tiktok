@@ -1,6 +1,7 @@
 package main
 
 import (
+	"tiktok/config"
 	"tiktok/db/model"
 
 	"gorm.io/driver/mysql"
@@ -20,7 +21,7 @@ func main() {
 		Mode:    gen.WithoutContext | gen.WithDefaultQuery | gen.WithQueryInterface, // generate mode
 	})
 
-	gormdb, _ := gorm.Open(mysql.Open("root:123456@(127.0.0.1:3306)/tiktok?charset=utf8mb4&parseTime=True&loc=Local"))
+	gormdb, _ := gorm.Open(mysql.Open(config.DSN))
 	g.UseDB(gormdb) // reuse your gorm db
 
 	// Generate basic type-safe DAO API

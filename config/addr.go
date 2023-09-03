@@ -7,4 +7,6 @@ const (
 
 	VideoPath = "/home/hades/store/videos/"
 	CoverPath = "/home/hades/store/covers/"
+
+	DSN = "root:123456@(127.0.0.1:3306)/tiktok?charset=utf8mb4&parseTime=True&loc=Local"
 )

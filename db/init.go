@@ -2,6 +2,7 @@ package db
 
 import (
 	"log"
+	"tiktok/config"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -10,11 +11,10 @@ import (
 var DB *gorm.DB
 
 func init() {
-	DB, err := gorm.Open(mysql.Open("root:123456@(127.0.0.1:3306)/tiktok?charset=utf8mb4&parseTime=True&loc=Local"))
+	DB, err := gorm.Open(mysql.Open(config.DSN))
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 
 	SetDefault(DB)
-
 }
