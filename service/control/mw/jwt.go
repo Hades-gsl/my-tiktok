@@ -35,7 +35,7 @@ func init() {
 			claims := jwt.ExtractClaims(ctx, c)
 			return &model.User{
 				Model: gorm.Model{
-					ID: claims[identityKey].(uint),
+					ID: uint(claims[identityKey].(float64)),
 				},
 			}
 		},
