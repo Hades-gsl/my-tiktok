@@ -42,18 +42,20 @@ func init() {
 func main() {
 	h := server.Default()
 
-	h.Use(mw.AuthMiddleware())
-
 	douyin := h.Group("/douyin")
 
-	douyin.GET("/feed", feedList)
+	feed := douyin.Group("/feed")
+	feed.Use(mw.AuthMiddleware())
+	feed.GET("/", feedList)
 
 	user := douyin.Group("/user")
+	user.Use(mw.AuthMiddleware())
 	user.POST("/register", register)
 	user.POST("/login", login)
 	user.GET("/", info)
 
 	publish := douyin.Group("/publish")
+	publish.Use(mw.JWTMiddleware.MiddlewareFunc())
 	publish.POST("/action", publishAction)
 	publish.GET("/list", publishList)
 

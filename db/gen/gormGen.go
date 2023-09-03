@@ -27,7 +27,7 @@ func main() {
 	g.ApplyBasic(model.User{}, model.Video{})
 
 	// Generate Type Safe API with Dynamic SQL defined on Querier interface
-	g.ApplyInterface(func(Querier) {}, model.UserToken{})
+	// g.ApplyInterface(func(Querier) {}, model.UserToken{})
 
 	// Generate the code
 	g.Execute()

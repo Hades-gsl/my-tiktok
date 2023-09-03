@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 	"tiktok/config"
+	"tiktok/db/model"
 	"tiktok/kitex_gen/user"
 	"tiktok/service/control/mw"
 
@@ -53,9 +54,12 @@ func login(ctx context.Context, c *app.RequestContext) {
 }
 
 func info(ctx context.Context, c *app.RequestContext) {
-	actor_id, ok := mw.Auth(c)
+	var actor_id uint
+	v, ok := c.Get(mw.JWTMiddleware.IdentityKey)
 	if !ok {
 		hlog.Error("no token or token invalid")
+	} else {
+		actor_id = v.(*model.User).ID
 	}
 	id, err := strconv.ParseInt(c.Query("user_id"), 10, 64)
 
@@ -72,7 +76,7 @@ func info(ctx context.Context, c *app.RequestContext) {
 
 	resp, err := userClient.Info(ctx, &user.InfoRequest{
 		UserId:  id,
-		ActorId: actor_id,
+		ActorId: int64(actor_id),
 	})
 
 	if err != nil {

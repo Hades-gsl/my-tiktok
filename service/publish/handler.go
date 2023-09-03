@@ -60,16 +60,18 @@ func (s *PublishServiceImpl) Action(ctx context.Context, req *publish.ActionRequ
 	}
 
 	video := &model.Video{
-		UserID:   uint32(req.UserId),
-		Title:    title,
-		FileAddr: "http://localhost:8080/videos/" + name + ".mp4",
+		UserID: uint32(req.UserId),
+		Title:  title,
+		// FileAddr: "http://localhost:8080/videos/" + name + ".mp4",
+		FileAddr: "http://10.0.2.2:8080/videos/" + name + ".mp4",
 	}
 
 	err = getCover(name, 1)
 	if err != nil {
 		hlog.Error(err)
 	} else {
-		video.CoverAddr = "http://localhost:8080/covers/" + name + ".png"
+		// video.CoverAddr = "http://localhost:8080/covers/" + name + ".png"
+		video.CoverAddr = "http://10.0.2.2:8080/covers/" + name + ".png"
 	}
 
 	err = db.Q.Video.WithContext(ctx).Save(video)

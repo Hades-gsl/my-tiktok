@@ -2,23 +2,13 @@ package mw
 
 import (
 	"context"
-	"tiktok/db"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/hlog"
+	"github.com/form3tech-oss/jwt-go"
 )
 
-const (
-	authResultSuccess string = "success"
-	authResultNoToken string = "no_token"
-	authResultUnknown string = "unknown"
-)
-
-const (
-	authResultKey = "authentication_result"
-	userIdKey     = "user_id"
-)
-
+//when token is optional, we use this middleware.
 func AuthMiddleware() app.HandlerFunc {
 	return func(ctx context.Context, c *app.RequestContext) {
 		token := c.Query("token")
@@ -28,36 +18,16 @@ func AuthMiddleware() app.HandlerFunc {
 
 		if token == "" {
 			hlog.Info("No token")
-			c.Set(authResultKey, authResultNoToken)
-			c.Set(userIdKey, 0)
 			return
 		}
 
-		userToken := db.Q.UserToken
-		user, err := userToken.WithContext(ctx).Where(userToken.Token.Eq(token)).First()
-
+		t, err := JWTMiddleware.ParseTokenString(token)
 		if err != nil {
-			hlog.Error(err.Error())
-			c.Set(authResultKey, authResultUnknown)
-			c.Set(userIdKey, 0)
+			hlog.Error(err)
 			return
 		}
 
-		c.Set(authResultKey, authResultSuccess)
-		c.Set(userIdKey, int64(user.UserID))
+		claims := t.Claims.(jwt.MapClaims)
+		c.Set(identityKey, claims[identityKey])
 	}
-}
-
-func Auth(c *app.RequestContext) (id int64, ok bool) {
-	result := c.GetString(authResultKey)
-
-	if result == authResultSuccess {
-		id = c.GetInt64(userIdKey)
-		ok = true
-		return
-	}
-
-	id = 0
-	ok = false
-	return
 }

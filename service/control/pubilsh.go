@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 	"tiktok/config"
+	"tiktok/db/model"
 	"tiktok/kitex_gen/publish"
 	"tiktok/service/control/mw"
 
@@ -13,7 +14,7 @@ import (
 )
 
 func publishAction(ctx context.Context, c *app.RequestContext) {
-	id, ok := mw.Auth(c)
+	v, ok := c.Get(mw.JWTMiddleware.IdentityKey)
 	if !ok {
 		hlog.Error(config.TokenInvalidStatusMsg)
 		c.JSON(http.StatusForbidden, &publish.ActionResponse{
@@ -22,6 +23,7 @@ func publishAction(ctx context.Context, c *app.RequestContext) {
 		})
 		return
 	}
+	id := v.(*model.User).ID
 
 	title := c.FormValue("title")
 	file, err := c.FormFile("data")
@@ -67,7 +69,7 @@ func publishAction(ctx context.Context, c *app.RequestContext) {
 	hlog.Infof("publishAction: user_id: %v, title: %v", id, string(title))
 
 	resp, err := publishClinet.Action(ctx, &publish.ActionRequest{
-		UserId: id,
+		UserId: int64(id),
 		Data:   data,
 		Title:  string(title),
 	})
@@ -82,15 +84,16 @@ func publishAction(ctx context.Context, c *app.RequestContext) {
 }
 
 func publishList(ctx context.Context, c *app.RequestContext) {
-	actor_id, ok := mw.Auth(c)
+	v, ok := c.Get(mw.JWTMiddleware.IdentityKey)
 	if !ok {
 		hlog.Error(config.TokenInvalidStatusMsg)
-		c.JSON(http.StatusForbidden, &publish.ListResponse{
+		c.JSON(http.StatusForbidden, &publish.ActionResponse{
 			StatusCode: config.TokenInvalidStatusCode,
 			StatusMsg:  &config.TokenInvalidStatusMsg,
 		})
 		return
 	}
+	actor_id := v.(*model.User).ID
 
 	user_id, err := strconv.ParseInt(c.Query("user_id"), 10, 64)
 	if err != nil {
@@ -106,7 +109,7 @@ func publishList(ctx context.Context, c *app.RequestContext) {
 
 	resp, err := publishClinet.List(ctx, &publish.ListRequest{
 		UserId:  user_id,
-		ActorId: actor_id,
+		ActorId: int64(actor_id),
 	})
 
 	if err != nil {

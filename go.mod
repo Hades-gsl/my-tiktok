@@ -8,8 +8,12 @@ require (
 	github.com/apache/thrift v0.13.0
 	github.com/cloudwego/hertz v0.6.7
 	github.com/cloudwego/kitex v0.6.2
+	github.com/disintegration/imaging v1.6.2
 	github.com/form3tech-oss/jwt-go v3.2.3+incompatible
+	github.com/google/uuid v1.3.1
+	github.com/hertz-contrib/jwt v1.0.2
 	github.com/kitex-contrib/registry-etcd v0.1.1
+	github.com/u2takey/ffmpeg-go v0.5.0
 	golang.org/x/crypto v0.0.0-20221005025214-4161e89ecf1b
 	gorm.io/driver/mysql v1.5.1
 	gorm.io/gen v0.3.23
@@ -32,15 +36,14 @@ require (
 	github.com/cloudwego/thriftgo v0.2.11 // indirect
 	github.com/coreos/go-semver v0.3.0 // indirect
 	github.com/coreos/go-systemd/v22 v22.3.2 // indirect
-	github.com/disintegration/imaging v1.6.2 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
 	github.com/go-logr/logr v1.2.4 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-sql-driver/mysql v1.7.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
+	github.com/golang-jwt/jwt/v4 v4.4.1 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/pprof v0.0.0-20220608213341-c488b8fa1db3 // indirect
-	github.com/google/uuid v1.3.1 // indirect
 	github.com/henrylee2cn/ameda v1.4.10 // indirect
 	github.com/henrylee2cn/goutil v0.0.0-20210127050712-89660552f6f8 // indirect
 	github.com/jhump/protoreflect v1.8.2 // indirect
@@ -57,7 +60,6 @@ require (
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
-	github.com/u2takey/ffmpeg-go v0.5.0 // indirect
 	github.com/u2takey/go-utils v0.3.1 // indirect
 	go.etcd.io/etcd/api/v3 v3.5.5 // indirect
 	go.etcd.io/etcd/client/pkg/v3 v3.5.5 // indirect

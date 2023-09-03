@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"strconv"
+	"tiktok/db/model"
 	"tiktok/kitex_gen/feed"
 	"tiktok/service/control/mw"
 	"time"
@@ -13,10 +14,17 @@ import (
 )
 
 func feedList(ctx context.Context, c *app.RequestContext) {
-	id, _ := mw.Auth(c)
+	v, ok := c.Get(mw.JWTMiddleware.IdentityKey)
+	var id int64
+	if ok {
+		if u, ok := v.(*model.User); ok {
+			id = int64(u.ID)
+		}
+	}
+
 	latestTime, err := strconv.ParseInt(c.Query("LatestTime"), 10, 64)
 	if err != nil {
-		hlog.Error(err.Error())
+		hlog.Error(err)
 		latestTime = time.Now().Unix()
 	}
 

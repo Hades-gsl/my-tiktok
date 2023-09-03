@@ -8,10 +8,10 @@ import (
 	"tiktok/db"
 	"tiktok/db/model"
 	user "tiktok/kitex_gen/user"
+	"tiktok/service/control/mw"
 	"time"
 
 	"github.com/cloudwego/hertz/pkg/common/hlog"
-	"github.com/form3tech-oss/jwt-go"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
@@ -61,16 +61,6 @@ func (s *UserServiceImpl) Register(ctx context.Context, req *user.RegisterReques
 		return
 	}
 
-	token, err := jwt.New(jwt.SigningMethodHS256).SignedString([]byte(name + password))
-	if err != nil {
-		hlog.Error(err.Error())
-		resp = &user.RegisterResponse{
-			StatusCode: config.GenerateTokenErrorStatusCode,
-			StatusMsg:  &config.GenerateTokenErrorStatusMsg,
-		}
-		return
-	}
-
 	err = db.Q.User.WithContext(ctx).Create(&model.User{
 		UserName:        name,
 		PassWord:        string(passwordHash),
@@ -97,16 +87,12 @@ func (s *UserServiceImpl) Register(ctx context.Context, req *user.RegisterReques
 		return
 	}
 
-	err = db.Q.UserToken.WithContext(ctx).Create(&model.UserToken{
-		Token:    token,
-		Username: name,
-		UserID:   uint32(u.ID),
-	})
+	token, _, err := mw.JWTMiddleware.TokenGenerator(u)
 	if err != nil {
-		hlog.Error(err.Error())
+		hlog.Error(err)
 		resp = &user.RegisterResponse{
-			StatusCode: config.SQLSaveErrorStatusCode,
-			StatusMsg:  &config.SQLSaveErrorStatusMsg,
+			StatusCode: config.GenerateTokenErrorStatusCode,
+			StatusMsg:  &config.GenerateTokenErrorStatusMsg,
 		}
 		return
 	}
@@ -154,20 +140,21 @@ func (s *UserServiceImpl) Login(ctx context.Context, req *user.LoginRequest) (re
 		return
 	}
 
-	t, err := db.Q.UserToken.WithContext(ctx).Where(db.Q.UserToken.UserID.Eq(uint32(u.ID))).First()
+	token, _, err := mw.JWTMiddleware.TokenGenerator(u)
 	if err != nil {
-		hlog.Error(err.Error())
+		hlog.Error(err)
 		resp = &user.LoginResponse{
-			StatusCode: config.SQLQueryErrorStatusCode,
-			StatusMsg:  &config.SQLQueryErrorStatusMsg,
+			StatusCode: config.GenerateTokenErrorStatusCode,
+			StatusMsg:  &config.GenerateTokenErrorStatusMsg,
 		}
 		return
 	}
+
 	resp = &user.LoginResponse{
 		StatusCode: config.OKStatusCode,
 		StatusMsg:  &config.OKStatusMsg,
 		UserId:     int64(u.ID),
-		Token:      t.Token,
+		Token:      token,
 	}
 	return
 }
