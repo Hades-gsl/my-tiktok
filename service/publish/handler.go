@@ -7,17 +7,20 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strconv"
 	"tiktok/config"
 	"tiktok/db"
 	"tiktok/db/model"
 	"tiktok/kitex_gen/feed"
 	publish "tiktok/kitex_gen/publish"
 	"tiktok/kitex_gen/user"
+	"tiktok/rdb"
 
 	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/disintegration/imaging"
 	"github.com/google/uuid"
 	ffmpeg_go "github.com/u2takey/ffmpeg-go"
+	"gorm.io/gorm"
 )
 
 // PublishServiceImpl implements the last service interface defined in the IDL.
@@ -84,6 +87,36 @@ func (s *PublishServiceImpl) Action(ctx context.Context, req *publish.ActionRequ
 		return
 	}
 
+	v, err := db.Q.Video.WithContext(ctx).Where(db.Q.Video.FileAddr.Eq(video.FileAddr)).First()
+	if err != nil {
+		hlog.Error(err)
+		resp = &publish.ActionResponse{
+			StatusCode: config.SQLQueryErrorStatusCode,
+			StatusMsg:  &config.SQLQueryErrorStatusMsg,
+		}
+		return
+	}
+
+	err = rdb.RedisDB.Set(ctx, strconv.FormatInt(int64(v.ID), 10)+"_likes", 0, 0).Err()
+	if err != nil {
+		hlog.Error(err)
+		resp = &publish.ActionResponse{
+			StatusCode: config.SQLSaveErrorStatusCode,
+			StatusMsg:  &config.SQLSaveErrorStatusMsg,
+		}
+		return
+	}
+
+	err = rdb.RedisDB.Set(ctx, strconv.FormatInt(int64(v.ID), 10)+"_comments", 0, 0).Err()
+	if err != nil {
+		hlog.Error(err)
+		resp = &publish.ActionResponse{
+			StatusCode: config.SQLSaveErrorStatusCode,
+			StatusMsg:  &config.SQLSaveErrorStatusMsg,
+		}
+		return
+	}
+
 	resp = &publish.ActionResponse{
 		StatusCode: config.OKStatusCode,
 		StatusMsg:  &config.OKStatusMsg,
@@ -133,7 +166,7 @@ func (s *PublishServiceImpl) List(ctx context.Context, req *publish.ListRequest)
 		return
 	}
 
-	videos, err := convert(ctx, find, user_id)
+	videos, err := convert(ctx, find, user_id, req.ActorId)
 	if err != nil {
 		hlog.Error(err)
 		resp = &publish.ListResponse{
@@ -151,7 +184,7 @@ func (s *PublishServiceImpl) List(ctx context.Context, req *publish.ListRequest)
 	return
 }
 
-func convert(ctx context.Context, videos []*model.Video, user_id int64) (res []*feed.Video, err error) {
+func convert(ctx context.Context, videos []*model.Video, user_id, actor_id int64) (res []*feed.Video, err error) {
 	find, err := db.Q.User.WithContext(ctx).Where(db.Q.User.ID.Eq(uint(user_id))).First()
 	if err != nil {
 		return
@@ -167,12 +200,33 @@ func convert(ctx context.Context, videos []*model.Video, user_id int64) (res []*
 
 	res = make([]*feed.Video, len(videos))
 	for i, v := range videos {
+		var f, c int64
+		f, c, err = rdb.GetLikesAndCommentsCount(ctx, int64(v.ID))
+		if err != nil {
+			hlog.Error(err)
+			return
+		}
+
+		var isFavorite bool
+		_, err = db.Q.Favorite.WithContext(ctx).Where(db.Q.Favorite.UserId.Eq(uint(actor_id)), db.Q.Favorite.VideoId.Eq(v.ID)).First()
+		if err == nil {
+			isFavorite = true
+		} else if err == gorm.ErrRecordNotFound {
+			err = nil
+			isFavorite = false
+		} else {
+			hlog.Error(err)
+			return
+		}
 		res[i] = &feed.Video{
-			Id:       int64(v.ID),
-			Author:   author,
-			PlayUrl:  v.FileAddr,
-			CoverUrl: v.CoverAddr,
-			Title:    v.Title,
+			Id:            int64(v.ID),
+			Author:        author,
+			PlayUrl:       v.FileAddr,
+			CoverUrl:      v.CoverAddr,
+			FavoriteCount: f,
+			CommentCount:  c,
+			IsFavorite:    isFavorite,
+			Title:         v.Title,
 		}
 	}
 	return

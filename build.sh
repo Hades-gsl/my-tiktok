@@ -1,7 +1,7 @@
 #!/bin/bash
 
 dir=$(pwd)
-svrs=("service/feed" "service/user" "service/publish" "service/control")
+svrs=("service/feed" "service/user" "service/publish" "service/favorite" "service/control")
 
 if [[ "$1" == "build" ]]; then
     for svr in "${svrs[@]}"; do

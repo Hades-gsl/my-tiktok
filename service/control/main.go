@@ -1,6 +1,7 @@
 package main
 
 import (
+	"tiktok/kitex_gen/favorite/favoriteservice"
 	"tiktok/kitex_gen/feed/feedservice"
 	"tiktok/kitex_gen/publish/publishservice"
 	"tiktok/kitex_gen/user/userservice"
@@ -13,9 +14,10 @@ import (
 )
 
 var (
-	feedClient    feedservice.Client
-	userClient    userservice.Client
-	publishClinet publishservice.Client
+	feedClient     feedservice.Client
+	userClient     userservice.Client
+	publishClinet  publishservice.Client
+	favoriteClient favoriteservice.Client
 )
 
 func init() {
@@ -34,6 +36,11 @@ func init() {
 	}
 
 	publishClinet, err = publishservice.NewClient("publish", client.WithResolver(r))
+	if err != nil {
+		hlog.Fatal(err)
+	}
+
+	favoriteClient, err = favoriteservice.NewClient("favorite", client.WithResolver(r))
 	if err != nil {
 		hlog.Fatal(err)
 	}
@@ -58,6 +65,11 @@ func main() {
 	publish.Use(mw.JWTMiddleware.MiddlewareFunc())
 	publish.POST("/action", publishAction)
 	publish.GET("/list", publishList)
+
+	favorite := douyin.Group("/favorite")
+	favorite.Use(mw.JWTMiddleware.MiddlewareFunc())
+	favorite.POST("/action", favoriteAction)
+	favorite.GET("/list", favoriteList)
 
 	h.Spin()
 }

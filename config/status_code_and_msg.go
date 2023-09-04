@@ -22,6 +22,9 @@ const (
 	FileTypeErrorStatusCode
 	FileSaveErrorStatusCode
 	TitleEmptyStatusCode
+	NoIDStatusCode
+	ParameterErrorStatusCode
+	UnknownFavoriteTypeStatusCode
 )
 
 var (
@@ -44,4 +47,7 @@ var (
 	FileTypeErrorStatusMsg       = "File type error"
 	FileSaveErrorStatusMsg       = "File save error"
 	TitleEmptyStatusMsg          = "Title empty"
+	NoIDStatusMsg                = "No ID"
+	ParameterErrorStatusMsg      = "Parameter error"
+	UnknownFavoriteTypeStatusMsg = "Unknown favorite type"
 )

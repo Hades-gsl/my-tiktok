@@ -3,7 +3,7 @@ include 'feed.thrift'
 namespace go favorite
 
 struct ActionRequest {
-    1: string token, // 用户鉴权token
+    1: i64 user_id, // 用户id
     2: i64 video_id, // 视频id
     3: i32 action_type // 1-点赞，2-取消点赞
 }
@@ -14,8 +14,8 @@ struct ActionResponse {
 }
 
 struct ListRequest {
-    1: i64 user_id, // 用户id
-    2: string token // 用户鉴权token
+    1: i64 actor_id, // 观看者id
+    2: i64 user_id // 用户id
 }
 
 struct ListResponse {
