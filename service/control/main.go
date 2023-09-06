@@ -10,6 +10,8 @@ import (
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/cloudwego/kitex/client"
+	"github.com/cloudwego/kitex/pkg/transmeta"
+	"github.com/cloudwego/kitex/transport"
 	etcd "github.com/kitex-contrib/registry-etcd"
 )
 
@@ -25,22 +27,28 @@ func init() {
 	if err != nil {
 		hlog.Fatal(err)
 	}
-	feedClient, err = feedservice.NewClient("feed", client.WithResolver(r))
+
+	var opts []client.Option
+	opts = append(opts, client.WithResolver(r))
+	opts = append(opts, client.WithTransportProtocol(transport.TTHeader))
+	opts = append(opts, client.WithMetaHandler(transmeta.ClientTTHeaderHandler))
+
+	feedClient, err = feedservice.NewClient("feed", opts...)
 	if err != nil {
 		hlog.Fatal(err)
 	}
 
-	userClient, err = userservice.NewClient("user", client.WithResolver(r))
+	userClient, err = userservice.NewClient("user", opts...)
 	if err != nil {
 		hlog.Fatal(err)
 	}
 
-	publishClinet, err = publishservice.NewClient("publish", client.WithResolver(r))
+	publishClinet, err = publishservice.NewClient("publish", opts...)
 	if err != nil {
 		hlog.Fatal(err)
 	}
 
-	favoriteClient, err = favoriteservice.NewClient("favorite", client.WithResolver(r))
+	favoriteClient, err = favoriteservice.NewClient("favorite", opts...)
 	if err != nil {
 		hlog.Fatal(err)
 	}

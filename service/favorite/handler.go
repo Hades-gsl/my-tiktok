@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"strconv"
 	"tiktok/config"
 	"tiktok/db"
@@ -13,6 +12,7 @@ import (
 	"tiktok/rdb"
 
 	"github.com/cloudwego/hertz/pkg/common/hlog"
+	"github.com/cloudwego/kitex/pkg/kerrors"
 	"gorm.io/gorm"
 )
 
@@ -28,22 +28,26 @@ func (s *FavoriteServiceImpl) Action(ctx context.Context, req *favorite.ActionRe
 	case 1:
 		{
 			err = like(ctx, user_id, video_id)
+			if err != nil {
+				hlog.Error(err)
+				err = kerrors.NewBizStatusError(config.SQLSaveErrorStatusCode, config.SQLSaveErrorStatusMsg)
+			}
 		}
 	case 2:
 		{
 			err = dislike(ctx, user_id, video_id)
+			if err != nil {
+				hlog.Error(err)
+				err = kerrors.NewBizStatusError(config.SQLDeleteErrorStatusCode, config.SQLDeleteErrorStatusMsg)
+			}
 		}
 	default:
 		{
-			err = errors.New(config.UnknownFavoriteTypeStatusMsg)
+			hlog.Error(config.UnknownFavoriteTypeStatusMsg)
+			err = kerrors.NewBizStatusError(config.UnknownFavoriteTypeStatusCode, config.UnknownFavoriteTypeStatusMsg)
 		}
 	}
 	if err != nil {
-		hlog.Error(err)
-		resp = &favorite.ActionResponse{
-			StatusCode: config.UnknownFavoriteTypeStatusCode,
-			StatusMsg:  &config.UnknownFavoriteTypeStatusMsg,
-		}
 		return
 	}
 
@@ -91,20 +95,14 @@ func (s *FavoriteServiceImpl) List(ctx context.Context, req *favorite.ListReques
 	find, err := db.Q.Favorite.WithContext(ctx).Where(db.Q.Favorite.UserId.Eq(uint(user_id))).Find()
 	if err != nil {
 		hlog.Error(err)
-		resp = &favorite.ListResponse{
-			StatusCode: config.SQLQueryErrorStatusCode,
-			StatusMsg:  &config.SQLQueryErrorStatusMsg,
-		}
+		err = kerrors.NewBizStatusError(config.SQLQueryErrorStatusCode, config.SQLQueryErrorStatusMsg)
 		return
 	}
 
 	videos, err := convert(ctx, find, uint(user_id))
 	if err != nil {
 		hlog.Error(err)
-		resp = &favorite.ListResponse{
-			StatusCode: config.SQLQueryErrorStatusCode,
-			StatusMsg:  &config.SQLQueryErrorStatusMsg,
-		}
+		err = kerrors.NewBizStatusError(config.SQLQueryErrorStatusCode, config.SQLQueryErrorStatusMsg)
 		return
 	}
 

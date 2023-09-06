@@ -10,6 +10,7 @@ import (
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/hlog"
+	"github.com/cloudwego/kitex/pkg/kerrors"
 )
 
 func register(ctx context.Context, c *app.RequestContext) {
@@ -23,9 +24,12 @@ func register(ctx context.Context, c *app.RequestContext) {
 		Password: password,
 	})
 
-	if err != nil {
+	if err, ok := kerrors.FromBizStatusError(err); ok {
 		hlog.Error(err.Error())
-		c.JSON(http.StatusForbidden, resp)
+		c.JSON(http.StatusBadRequest, map[string]interface{}{
+			"status_code": err.BizStatusCode(),
+			"status_msg":  err.BizMessage(),
+		})
 		return
 	}
 
@@ -43,9 +47,12 @@ func login(ctx context.Context, c *app.RequestContext) {
 		Password: password,
 	})
 
-	if err != nil {
+	if err, ok := kerrors.FromBizStatusError(err); ok {
 		hlog.Error(err.Error())
-		c.JSON(http.StatusForbidden, resp)
+		c.JSON(http.StatusBadRequest, map[string]interface{}{
+			"status_code": err.BizStatusCode(),
+			"status_msg":  err.BizMessage(),
+		})
 		return
 	}
 
@@ -65,7 +72,7 @@ func info(ctx context.Context, c *app.RequestContext) {
 	hlog.Infof("info: user_id: %v, actor_id: %v", id, actor_id)
 
 	if err != nil {
-		c.JSON(http.StatusForbidden, &user.InforResponse{
+		c.JSON(http.StatusBadRequest, &user.InforResponse{
 			StatusCode: config.IdInvalidStatusCode,
 			StatusMsg:  &config.IdInvalidStatusMsg,
 		})
@@ -78,9 +85,12 @@ func info(ctx context.Context, c *app.RequestContext) {
 		ActorId: actor_id,
 	})
 
-	if err != nil {
+	if err, ok := kerrors.FromBizStatusError(err); ok {
 		hlog.Error(err.Error())
-		c.JSON(http.StatusForbidden, resp)
+		c.JSON(http.StatusBadRequest, map[string]interface{}{
+			"status_code": err.BizStatusCode(),
+			"status_msg":  err.BizMessage(),
+		})
 		return
 	}
 

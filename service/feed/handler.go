@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/cloudwego/hertz/pkg/common/hlog"
+	"github.com/cloudwego/kitex/pkg/kerrors"
 	"gorm.io/gorm"
 )
 
@@ -22,25 +23,23 @@ func (s *FeedServiceImpl) List(ctx context.Context, req *feed.ListRequest) (resp
 	latesttime := req.LatestTime
 	find, err := findVideos(ctx, *latesttime)
 	if err != nil {
-		resp = &feed.ListResponse{
-			StatusCode: config.SQLQueryErrorStatusCode,
-			StatusMsg:  &config.SQLQueryErrorStatusMsg,
-		}
+		hlog.Error(err)
+		err = kerrors.NewBizStatusError(config.SQLQueryErrorStatusCode, config.SQLQueryErrorStatusMsg)
 		return
 	}
 
 	if len(find) == 0 {
-		resp = &feed.ListResponse{
-			StatusCode: config.NoVideoStatusCode,
-			StatusMsg:  &config.NoVideoStatusMsg,
-		}
+		hlog.Error(config.NoVideoStatusMsg)
+		err = kerrors.NewBizStatusError(config.NoVideoStatusCode, config.NoVideoStatusMsg)
 		return
 	}
 
 	nextTime := find[len(find)-1].CreatedAt.Unix()
 	videos, err := convert(ctx, find, *req.UserId)
 	if err != nil {
-		hlog.Error(err.Error())
+		hlog.Error(err)
+		err = kerrors.NewBizStatusError(config.SQLQueryErrorStatusCode, config.SQLQueryErrorStatusMsg)
+		return
 	}
 
 	resp = &feed.ListResponse{

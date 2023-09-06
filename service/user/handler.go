@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"math/rand"
 	"tiktok/config"
 	"tiktok/db"
@@ -12,6 +11,7 @@ import (
 	"time"
 
 	"github.com/cloudwego/hertz/pkg/common/hlog"
+	"github.com/cloudwego/kitex/pkg/kerrors"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
@@ -25,39 +25,25 @@ func (s *UserServiceImpl) Register(ctx context.Context, req *user.RegisterReques
 	password := req.Password
 
 	if name == "" || password == "" {
-		resp = &user.RegisterResponse{
-			StatusCode: config.NameOrPasswordEmptyStatusCode,
-			StatusMsg:  &config.NameOrPasswordEmptyStatusMsg,
-		}
-		err = errors.New(config.NameOrPasswordEmptyStatusMsg)
+		err = kerrors.NewBizStatusError(config.NameOrPasswordEmptyStatusCode, config.NameOrPasswordEmptyStatusMsg)
 		return
 	}
 
 	_, err = db.Q.User.WithContext(ctx).Where(db.Q.User.UserName.Eq(name)).First()
 	if err != gorm.ErrRecordNotFound {
 		if err != nil {
-			hlog.Error(err.Error())
-			resp = &user.RegisterResponse{
-				StatusCode: config.SQLQueryErrorStatusCode,
-				StatusMsg:  &config.SQLQueryErrorStatusMsg,
-			}
+			hlog.Error(err)
+			err = kerrors.NewBizStatusError(config.SQLQueryErrorStatusCode, config.SQLQueryErrorStatusMsg)
 		} else {
-			resp = &user.RegisterResponse{
-				StatusCode: config.NameExistStatusCode,
-				StatusMsg:  &config.NameExistStatusMsg,
-			}
-			err = errors.New(config.NameExistStatusMsg)
+			err = kerrors.NewBizStatusError(config.NameExistStatusCode, config.NameExistStatusMsg)
 		}
 		return
 	}
 
 	passwordHash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		hlog.Error(err.Error())
-		resp = &user.RegisterResponse{
-			StatusCode: config.PasswordHashErrorStatusCode,
-			StatusMsg:  &config.PasswordHashErrorStatusMsg,
-		}
+		hlog.Error(err)
+		err = kerrors.NewBizStatusError(config.PasswordHashErrorStatusCode, config.PasswordHashErrorStatusMsg)
 		return
 	}
 
@@ -69,31 +55,22 @@ func (s *UserServiceImpl) Register(ctx context.Context, req *user.RegisterReques
 		Signature:       "TODO",
 	})
 	if err != nil {
-		hlog.Error(err.Error())
-		resp = &user.RegisterResponse{
-			StatusCode: config.SQLSaveErrorStatusCode,
-			StatusMsg:  &config.SQLSaveErrorStatusMsg,
-		}
+		hlog.Error(err)
+		err = kerrors.NewBizStatusError(config.SQLSaveErrorStatusCode, config.SQLSaveErrorStatusMsg)
 		return
 	}
 
 	u, err := db.Q.User.WithContext(ctx).Where(db.Q.User.UserName.Eq(name)).First()
 	if err != nil {
-		hlog.Error(err.Error())
-		resp = &user.RegisterResponse{
-			StatusCode: config.SQLQueryErrorStatusCode,
-			StatusMsg:  &config.SQLQueryErrorStatusMsg,
-		}
+		hlog.Error(err)
+		err = kerrors.NewBizStatusError(config.SQLQueryErrorStatusCode, config.SQLQueryErrorStatusMsg)
 		return
 	}
 
 	token, _, err := mw.JWTMiddleware.TokenGenerator(u)
 	if err != nil {
 		hlog.Error(err)
-		resp = &user.RegisterResponse{
-			StatusCode: config.GenerateTokenErrorStatusCode,
-			StatusMsg:  &config.GenerateTokenErrorStatusMsg,
-		}
+		err = kerrors.NewBizStatusError(config.GenerateTokenErrorStatusCode, config.GenerateTokenErrorStatusMsg)
 		return
 	}
 
@@ -112,41 +89,28 @@ func (s *UserServiceImpl) Login(ctx context.Context, req *user.LoginRequest) (re
 	password := req.Password
 
 	if name == "" || password == "" {
-		resp = &user.LoginResponse{
-			StatusCode: config.NameOrPasswordEmptyStatusCode,
-			StatusMsg:  &config.NameOrPasswordEmptyStatusMsg,
-		}
-		err = errors.New(config.NameOrPasswordEmptyStatusMsg)
+		err = kerrors.NewBizStatusError(config.NameOrPasswordEmptyStatusCode, config.NameOrPasswordEmptyStatusMsg)
 		return
 	}
 
 	u, err := db.Q.User.WithContext(ctx).Where(db.Q.User.UserName.Eq(name)).First()
 	if err != nil {
-		hlog.Error(err.Error())
-		resp = &user.LoginResponse{
-			StatusCode: config.UserNotFoundStatusCode,
-			StatusMsg:  &config.UserNotFoundStatusMsg,
-		}
+		hlog.Error(err)
+		err = kerrors.NewBizStatusError(config.UserNotFoundStatusCode, config.UserNotFoundStatusMsg)
 		return
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(u.PassWord), []byte(password))
 	if err != nil {
-		hlog.Error(err.Error())
-		resp = &user.LoginResponse{
-			StatusCode: config.PasswordWrongStatusCode,
-			StatusMsg:  &config.PasswordWrongStatusMsg,
-		}
+		hlog.Error(err)
+		err = kerrors.NewBizStatusError(config.PasswordWrongStatusCode, config.PasswordWrongStatusMsg)
 		return
 	}
 
 	token, _, err := mw.JWTMiddleware.TokenGenerator(u)
 	if err != nil {
 		hlog.Error(err)
-		resp = &user.LoginResponse{
-			StatusCode: config.GenerateTokenErrorStatusCode,
-			StatusMsg:  &config.GenerateTokenErrorStatusMsg,
-		}
+		err = kerrors.NewBizStatusError(config.GenerateTokenErrorStatusCode, config.GenerateTokenErrorStatusMsg)
 		return
 	}
 
@@ -165,11 +129,8 @@ func (s *UserServiceImpl) Info(ctx context.Context, req *user.InfoRequest) (resp
 
 	u, err := db.Q.User.Where(db.Q.User.ID.Eq(uint(id))).First()
 	if err != nil {
-		hlog.Error(err.Error())
-		resp = &user.InforResponse{
-			StatusCode: config.SQLQueryErrorStatusCode,
-			StatusMsg:  &config.SQLQueryErrorStatusMsg,
-		}
+		hlog.Error(err)
+		err = kerrors.NewBizStatusError(config.SQLQueryErrorStatusCode, config.SQLQueryErrorStatusMsg)
 		return
 	}
 

@@ -11,13 +11,14 @@ import (
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/hlog"
+	"github.com/cloudwego/kitex/pkg/kerrors"
 )
 
 func favoriteAction(ctx context.Context, c *app.RequestContext) {
 	v, ok := c.Get(mw.JWTMiddleware.IdentityKey)
 	if !ok {
 		hlog.Error(config.NoIDStatusMsg)
-		c.JSON(http.StatusForbidden, &favorite.ActionResponse{
+		c.JSON(http.StatusBadRequest, &favorite.ActionResponse{
 			StatusCode: config.NoIDStatusCode,
 			StatusMsg:  &config.NoIDStatusMsg,
 		})
@@ -28,7 +29,7 @@ func favoriteAction(ctx context.Context, c *app.RequestContext) {
 	video_id, err := strconv.ParseInt(c.Query("video_id"), 10, 64)
 	if err != nil {
 		hlog.Error(err)
-		c.JSON(http.StatusForbidden, &favorite.ActionResponse{
+		c.JSON(http.StatusBadRequest, &favorite.ActionResponse{
 			StatusCode: config.ParameterErrorStatusCode,
 			StatusMsg:  &config.ParameterErrorStatusMsg,
 		})
@@ -38,7 +39,7 @@ func favoriteAction(ctx context.Context, c *app.RequestContext) {
 	action_type, err := strconv.ParseInt(c.Query("action_type"), 10, 32)
 	if err != nil {
 		hlog.Error(err)
-		c.JSON(http.StatusForbidden, &favorite.ActionResponse{
+		c.JSON(http.StatusBadRequest, &favorite.ActionResponse{
 			StatusCode: config.ParameterErrorStatusCode,
 			StatusMsg:  &config.ParameterErrorStatusMsg,
 		})
@@ -53,9 +54,12 @@ func favoriteAction(ctx context.Context, c *app.RequestContext) {
 		ActionType: int32(action_type),
 	})
 
-	if err != nil {
-		hlog.Error(err)
-		c.JSON(http.StatusForbidden, resp)
+	if err, ok := kerrors.FromBizStatusError(err); ok {
+		hlog.Error(err.Error())
+		c.JSON(http.StatusBadRequest, map[string]interface{}{
+			"status_code": err.BizStatusCode(),
+			"status_msg":  err.BizMessage(),
+		})
 		return
 	}
 
@@ -66,7 +70,7 @@ func favoriteList(ctx context.Context, c *app.RequestContext) {
 	v, ok := c.Get(mw.JWTMiddleware.IdentityKey)
 	if !ok {
 		hlog.Error(config.NoIDStatusMsg)
-		c.JSON(http.StatusForbidden, &favorite.ListResponse{
+		c.JSON(http.StatusBadRequest, &favorite.ListResponse{
 			StatusCode: config.NoIDStatusCode,
 			StatusMsg:  &config.NoIDStatusMsg,
 		})
@@ -77,7 +81,7 @@ func favoriteList(ctx context.Context, c *app.RequestContext) {
 	user_id, err := strconv.ParseInt(c.Query("user_id"), 10, 64)
 	if err != nil {
 		hlog.Error(err)
-		c.JSON(http.StatusForbidden, &favorite.ListResponse{
+		c.JSON(http.StatusBadRequest, &favorite.ListResponse{
 			StatusCode: config.ParameterErrorStatusCode,
 			StatusMsg:  &config.ParameterErrorStatusMsg,
 		})
@@ -91,9 +95,12 @@ func favoriteList(ctx context.Context, c *app.RequestContext) {
 		UserId:  user_id,
 	})
 
-	if err != nil {
-		hlog.Error(err)
-		c.JSON(http.StatusForbidden, resp)
+	if err, ok := kerrors.FromBizStatusError(err); ok {
+		hlog.Error(err.Error())
+		c.JSON(http.StatusBadRequest, map[string]interface{}{
+			"status_code": err.BizStatusCode(),
+			"status_msg":  err.BizMessage(),
+		})
 		return
 	}
 

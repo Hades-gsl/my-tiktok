@@ -10,6 +10,7 @@ import (
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/hlog"
+	"github.com/cloudwego/kitex/pkg/kerrors"
 )
 
 func feedList(ctx context.Context, c *app.RequestContext) {
@@ -32,9 +33,13 @@ func feedList(ctx context.Context, c *app.RequestContext) {
 		UserId:     &id,
 	})
 
-	if err != nil {
+	if err, ok := kerrors.FromBizStatusError(err); ok {
 		hlog.Error(err.Error())
-		c.JSON(http.StatusForbidden, res)
+		c.JSON(http.StatusBadRequest, map[string]interface{}{
+			"status_code": err.BizStatusCode(),
+			"status_msg":  err.BizMessage(),
+		})
+		return
 	}
 
 	c.JSON(http.StatusOK, res)

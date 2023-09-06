@@ -7,6 +7,7 @@ import (
 	favorite "tiktok/kitex_gen/favorite/favoriteservice"
 
 	"github.com/cloudwego/kitex/pkg/rpcinfo"
+	"github.com/cloudwego/kitex/pkg/transmeta"
 	"github.com/cloudwego/kitex/server"
 	etcd "github.com/kitex-contrib/registry-etcd"
 )
@@ -24,7 +25,8 @@ func main() {
 
 	svr := favorite.NewServer(new(FavoriteServiceImpl),
 		server.WithServerBasicInfo(&rpcinfo.EndpointBasicInfo{ServiceName: "favorite"}),
-		server.WithRegistry(r), server.WithServiceAddr(addr))
+		server.WithRegistry(r), server.WithServiceAddr(addr),
+		server.WithMetaHandler(transmeta.ServerTTHeaderHandler))
 
 	err = svr.Run()
 

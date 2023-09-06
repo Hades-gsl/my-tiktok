@@ -11,13 +11,14 @@ import (
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/hlog"
+	"github.com/cloudwego/kitex/pkg/kerrors"
 )
 
 func publishAction(ctx context.Context, c *app.RequestContext) {
 	v, ok := c.Get(mw.JWTMiddleware.IdentityKey)
 	if !ok {
 		hlog.Error(config.TokenInvalidStatusMsg)
-		c.JSON(http.StatusForbidden, &publish.ActionResponse{
+		c.JSON(http.StatusBadRequest, &publish.ActionResponse{
 			StatusCode: config.TokenInvalidStatusCode,
 			StatusMsg:  &config.TokenInvalidStatusMsg,
 		})
@@ -29,7 +30,7 @@ func publishAction(ctx context.Context, c *app.RequestContext) {
 	file, err := c.FormFile("data")
 	if err != nil {
 		hlog.Error(err)
-		c.JSON(http.StatusForbidden, &publish.ActionResponse{
+		c.JSON(http.StatusBadRequest, &publish.ActionResponse{
 			StatusCode: config.GetFileErrorStatusCode,
 			StatusMsg:  &config.GetFileErrorStatusMsg,
 		})
@@ -39,7 +40,7 @@ func publishAction(ctx context.Context, c *app.RequestContext) {
 	fp, err := file.Open()
 	if err != nil {
 		hlog.Error(err)
-		c.JSON(http.StatusForbidden, &publish.ActionResponse{
+		c.JSON(http.StatusBadRequest, &publish.ActionResponse{
 			StatusCode: config.FileOpenErrorStatusCode,
 			StatusMsg:  &config.FileOpenErrorStatusMsg,
 		})
@@ -59,7 +60,7 @@ func publishAction(ctx context.Context, c *app.RequestContext) {
 		} else {
 			hlog.Error(config.FileReadErrorStatusMsg)
 		}
-		c.JSON(http.StatusForbidden, &publish.ActionResponse{
+		c.JSON(http.StatusBadRequest, &publish.ActionResponse{
 			StatusCode: config.FileReadErrorStatusCode,
 			StatusMsg:  &config.FileReadErrorStatusMsg,
 		})
@@ -74,9 +75,12 @@ func publishAction(ctx context.Context, c *app.RequestContext) {
 		Title:  string(title),
 	})
 
-	if err != nil {
-		hlog.Error(err)
-		c.JSON(http.StatusForbidden, resp)
+	if err, ok := kerrors.FromBizStatusError(err); ok {
+		hlog.Error(err.Error())
+		c.JSON(http.StatusBadRequest, map[string]interface{}{
+			"status_code": err.BizStatusCode(),
+			"status_msg":  err.BizMessage(),
+		})
 		return
 	}
 
@@ -87,7 +91,7 @@ func publishList(ctx context.Context, c *app.RequestContext) {
 	v, ok := c.Get(mw.JWTMiddleware.IdentityKey)
 	if !ok {
 		hlog.Error(config.TokenInvalidStatusMsg)
-		c.JSON(http.StatusForbidden, &publish.ActionResponse{
+		c.JSON(http.StatusBadRequest, &publish.ActionResponse{
 			StatusCode: config.TokenInvalidStatusCode,
 			StatusMsg:  &config.TokenInvalidStatusMsg,
 		})
@@ -98,7 +102,7 @@ func publishList(ctx context.Context, c *app.RequestContext) {
 	user_id, err := strconv.ParseInt(c.Query("user_id"), 10, 64)
 	if err != nil {
 		hlog.Error(err)
-		c.JSON(http.StatusForbidden, &publish.ListResponse{
+		c.JSON(http.StatusBadRequest, &publish.ListResponse{
 			StatusCode: config.IdInvalidStatusCode,
 			StatusMsg:  &config.IdInvalidStatusMsg,
 		})
@@ -112,9 +116,12 @@ func publishList(ctx context.Context, c *app.RequestContext) {
 		ActorId: int64(actor_id),
 	})
 
-	if err != nil {
-		hlog.Error(err)
-		c.JSON(http.StatusForbidden, resp)
+	if err, ok := kerrors.FromBizStatusError(err); ok {
+		hlog.Error(err.Error())
+		c.JSON(http.StatusBadRequest, map[string]interface{}{
+			"status_code": err.BizStatusCode(),
+			"status_msg":  err.BizMessage(),
+		})
 		return
 	}
 

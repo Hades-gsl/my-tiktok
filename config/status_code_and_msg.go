@@ -25,6 +25,7 @@ const (
 	NoIDStatusCode
 	ParameterErrorStatusCode
 	UnknownFavoriteTypeStatusCode
+	SQLDeleteErrorStatusCode
 )
 
 var (
@@ -50,4 +51,5 @@ var (
 	NoIDStatusMsg                = "No ID"
 	ParameterErrorStatusMsg      = "Parameter error"
 	UnknownFavoriteTypeStatusMsg = "Unknown favorite type"
+	SQLDeleteErrorStatusMsg      = "SQL delete error"
 )

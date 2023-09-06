@@ -7,6 +7,7 @@ import (
 	publish "tiktok/kitex_gen/publish/publishservice"
 
 	"github.com/cloudwego/kitex/pkg/rpcinfo"
+	"github.com/cloudwego/kitex/pkg/transmeta"
 	"github.com/cloudwego/kitex/server"
 	etcd "github.com/kitex-contrib/registry-etcd"
 )
@@ -24,7 +25,8 @@ func main() {
 
 	svr := publish.NewServer(new(PublishServiceImpl),
 		server.WithServerBasicInfo(&rpcinfo.EndpointBasicInfo{ServiceName: "publish"}),
-		server.WithRegistry(r), server.WithServiceAddr(addr))
+		server.WithRegistry(r), server.WithServiceAddr(addr),
+		server.WithMetaHandler(transmeta.ServerTTHeaderHandler))
 
 	err = svr.Run()
 

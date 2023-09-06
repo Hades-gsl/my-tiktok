@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -17,6 +16,7 @@ import (
 	"tiktok/rdb"
 
 	"github.com/cloudwego/hertz/pkg/common/hlog"
+	"github.com/cloudwego/kitex/pkg/kerrors"
 	"github.com/disintegration/imaging"
 	"github.com/google/uuid"
 	ffmpeg_go "github.com/u2takey/ffmpeg-go"
@@ -30,24 +30,16 @@ type PublishServiceImpl struct{}
 func (s *PublishServiceImpl) Action(ctx context.Context, req *publish.ActionRequest) (resp *publish.ActionResponse, err error) {
 	title := req.Title
 	if title == "" {
-		err = errors.New(config.TitleEmptyStatusMsg)
-		hlog.Error(err)
-		resp = &publish.ActionResponse{
-			StatusCode: config.TitleEmptyStatusCode,
-			StatusMsg:  &config.TitleEmptyStatusMsg,
-		}
+		hlog.Error(config.TitleEmptyStatusMsg)
+		err = kerrors.NewBizStatusError(config.TitleEmptyStatusCode, config.TitleEmptyStatusMsg)
 		return
 	}
 
 	data := req.Data
 	fileType := http.DetectContentType(data)
 	if fileType != "video/mp4" {
-		err = errors.New(config.FileTypeErrorStatusMsg)
-		hlog.Error(err)
-		resp = &publish.ActionResponse{
-			StatusCode: config.FileTypeErrorStatusCode,
-			StatusMsg:  &config.FileTypeErrorStatusMsg,
-		}
+		hlog.Error(config.FileTypeErrorStatusMsg)
+		err = kerrors.NewBizStatusError(config.FileTypeErrorStatusCode, config.FileTypeErrorStatusMsg)
 		return
 	}
 
@@ -55,10 +47,7 @@ func (s *PublishServiceImpl) Action(ctx context.Context, req *publish.ActionRequ
 	err = os.WriteFile(config.VideoPath+name+".mp4", data, 0644)
 	if err != nil {
 		hlog.Error(err)
-		resp = &publish.ActionResponse{
-			StatusCode: config.FileSaveErrorStatusCode,
-			StatusMsg:  &config.FileSaveErrorStatusMsg,
-		}
+		err = kerrors.NewBizStatusError(config.FileSaveErrorStatusCode, config.FileSaveErrorStatusMsg)
 		return
 	}
 
@@ -80,40 +69,28 @@ func (s *PublishServiceImpl) Action(ctx context.Context, req *publish.ActionRequ
 	err = db.Q.Video.WithContext(ctx).Save(video)
 	if err != nil {
 		hlog.Error(err)
-		resp = &publish.ActionResponse{
-			StatusCode: config.SQLSaveErrorStatusCode,
-			StatusMsg:  &config.SQLSaveErrorStatusMsg,
-		}
+		err = kerrors.NewBizStatusError(config.SQLSaveErrorStatusCode, config.SQLSaveErrorStatusMsg)
 		return
 	}
 
 	v, err := db.Q.Video.WithContext(ctx).Where(db.Q.Video.FileAddr.Eq(video.FileAddr)).First()
 	if err != nil {
 		hlog.Error(err)
-		resp = &publish.ActionResponse{
-			StatusCode: config.SQLQueryErrorStatusCode,
-			StatusMsg:  &config.SQLQueryErrorStatusMsg,
-		}
+		err = kerrors.NewBizStatusError(config.SQLQueryErrorStatusCode, config.SQLQueryErrorStatusMsg)
 		return
 	}
 
 	err = rdb.RedisDB.Set(ctx, strconv.FormatInt(int64(v.ID), 10)+"_likes", 0, 0).Err()
 	if err != nil {
 		hlog.Error(err)
-		resp = &publish.ActionResponse{
-			StatusCode: config.SQLSaveErrorStatusCode,
-			StatusMsg:  &config.SQLSaveErrorStatusMsg,
-		}
+		err = kerrors.NewBizStatusError(config.SQLSaveErrorStatusCode, config.SQLSaveErrorStatusMsg)
 		return
 	}
 
 	err = rdb.RedisDB.Set(ctx, strconv.FormatInt(int64(v.ID), 10)+"_comments", 0, 0).Err()
 	if err != nil {
 		hlog.Error(err)
-		resp = &publish.ActionResponse{
-			StatusCode: config.SQLSaveErrorStatusCode,
-			StatusMsg:  &config.SQLSaveErrorStatusMsg,
-		}
+		err = kerrors.NewBizStatusError(config.SQLSaveErrorStatusCode, config.SQLSaveErrorStatusMsg)
 		return
 	}
 
@@ -159,20 +136,14 @@ func (s *PublishServiceImpl) List(ctx context.Context, req *publish.ListRequest)
 	find, err := db.Q.Video.WithContext(ctx).Where(db.Q.Video.UserID.Eq(uint32(user_id))).Find()
 	if err != nil {
 		hlog.Error(err)
-		resp = &publish.ListResponse{
-			StatusCode: config.SQLQueryErrorStatusCode,
-			StatusMsg:  &config.SQLQueryErrorStatusMsg,
-		}
+		err = kerrors.NewBizStatusError(config.SQLQueryErrorStatusCode, config.SQLQueryErrorStatusMsg)
 		return
 	}
 
 	videos, err := convert(ctx, find, user_id, req.ActorId)
 	if err != nil {
 		hlog.Error(err)
-		resp = &publish.ListResponse{
-			StatusCode: config.SQLQueryErrorStatusCode,
-			StatusMsg:  &config.SQLQueryErrorStatusMsg,
-		}
+		err = kerrors.NewBizStatusError(config.SQLQueryErrorStatusCode, config.SQLQueryErrorStatusMsg)
 		return
 	}
 
