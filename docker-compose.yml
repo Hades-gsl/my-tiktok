@@ -1,0 +1,77 @@
+version: "3.8"
+services:
+  tiktok:
+    build: .
+    container_name: tiktok
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./store:/store
+    depends_on:
+      - mysql
+      - redis
+      - etcd
+      - nginx
+    networks:
+      - mynetwork
+
+  redis:
+    image: redis
+    restart: always
+    container_name: redis
+    command: redis-server
+    # volumes:
+    #   - ./redis/datadir:/data
+    #   - ./redis/conf/redis.conf:/usr/local/etc/redis/redis.conf
+    #   - ./redis/logs:/logs
+    ports:
+      - "6379:6379"
+    networks:
+      - mynetwork
+  
+  mysql:
+    image: mysql
+    # volumes:
+    #   - ./db/sql:/docker-entrypoint-initdb.d
+    #   - ./mysql/data:/var/lib/mysql
+    #   - ./mysql/config/my.cnf:/etc/mysql/my.cnf
+    restart: always
+    container_name: mysql
+    environment:
+      MYSQL_DATABASE: tiktok
+      MYSQL_ROOT_PASSWORD: 123456
+      TZ: Asia/Shanghai
+    volumes:
+      - ./store:/store
+      - ./db/sql:/docker-entrypoint-initdb.d
+    ports:
+      - "3306:3306"
+    networks:
+      - mynetwork
+
+  etcd:
+    image: bitnami/etcd:latest
+    restart: always
+    environment:
+      - ALLOW_NONE_AUTHENTICATION=yes
+      - ETCD_ADVERTISE_CLIENT_URLS=http://0.0.0.0:2379
+    ports:
+      - 2379:2379
+      - 2380:2380
+    networks:
+      - mynetwork
+
+  nginx:
+    image: nginx
+    volumes:
+      - ./store:/usr/share/nginx/html
+    ports:
+      - "8080:80"
+    environment:
+      - NGINX_PORT=80
+    networks:
+      - mynetwork
+
+networks:
+  mynetwork:
+    name: mynetwork
